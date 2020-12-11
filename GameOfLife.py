@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import time
 
 pygame.init()
 
@@ -17,33 +18,61 @@ dimCH = height / nyC
 gameState = np.zeros((nxC, nyC))
 
 
-gameState[5, 3] = 1
-gameState[5, 4] = 1
-gameState[5, 5] = 1
+gameState[15, 15] = 1
+gameState[17, 15] = 1
+gameState[16, 16] = 1
+gameState[17, 16] = 1
+gameState[16, 17] = 1
 
-while True:
+
+pauseExect = False
+
+running = True
+while running:
 
     newGameState = np.copy(gameState)
+
+    time.sleep(0.1)
+
+    for event in pygame.event.get():
+
+        if (pygame.key.get_pressed()[pygame.K_ESCAPE]):
+            running = False
+
+        if event.type == pygame.QUIT:
+            running = False
+
+        if (pygame.key.get_pressed()[pygame.K_SPACE]):
+            pauseExect = not pauseExect
+
+        mouseClick = pygame.mouse.get_pressed()
+
+        if sum(mouseClick) > 0:
+            posX, posY = pygame.mouse.get_pos()
+            celX, celY = int(np.floor(posX / dimCW)), int(np.floor(posY / dimCH))
+            newGameState[celX, celY] = not mouseClick[2]
 
     screen.fill(bg)
 
     for y in range(0, nxC):
         for x in range(0, nyC):
 
-            n_neigh = gameState[(x-1) % nxC, (y-1) % nyC] + \
-                        gameState[(x) % nxC, (y-1) % nyC] + \
-                        gameState[(x+1) % nxC, (y-1) % nyC] + \
-                        gameState[(x-1) % nxC, (y) % nyC] + \
-                        gameState[(x+1) % nxC, (y+1) % nyC] + \
-                        gameState[(x-1) % nxC, (y+1) % nyC] + \
-                        gameState[(x) % nxC, (y+1) % nyC] + \
-                        gameState[(x+1) % nxC, (y) % nyC]
+            if not pauseExect:
 
-            if gameState[x, y] == 0 and n_neigh == 3:
-                newGameState[x, y] = 1
+                n_neigh = gameState[(x-1) % nxC, (y-1) % nyC] + \
+                            gameState[(x) % nxC, (y-1) % nyC] + \
+                            gameState[(x+1) % nxC, (y-1) % nyC] + \
+                            gameState[(x-1) % nxC, (y) % nyC] + \
+                            gameState[(x+1) % nxC, (y+1) % nyC] + \
+                            gameState[(x-1) % nxC, (y+1) % nyC] + \
+                            gameState[(x) % nxC, (y+1) % nyC] + \
+                            gameState[(x+1) % nxC, (y) % nyC]
 
-            if gameState[x, y] == 1 and (n_neigh < 2 or n_neigh > 3):
-                newGameState[x, y] = 0
+                if gameState[x, y] == 0 and n_neigh == 3:
+                    newGameState[x, y] = 1
+
+                elif gameState[x, y] == 1 and (n_neigh < 2 or n_neigh > 3):
+                    newGameState[x, y] = 0
 
 
 
@@ -61,3 +90,6 @@ while True:
     gameState = np.copy(newGameState)
 
     pygame.display.flip()
+
+
+pygame.quit()
